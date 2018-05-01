@@ -53,7 +53,6 @@ class global_:
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Extract information from HSK-HTML-File.')
-    parser.add_argument("-a", '--auto', action="store_true", help='auto output')
     parser.add_argument("-d", '--dummy',default=global_.config['dummy'], action="store_true", help='auto output')
     parser.add_argument("-v",'--verbose',help='verbose output',action="store_true")
     parser.add_argument('--connector', help='verbose output', default="CSV")
@@ -77,7 +76,6 @@ if __name__ == '__main__':
 
     connector = connector_class()
     extractor =  extractor_class( connector, global_ )
-
 
     # Check for "Auto"-Argument
     if not args.id:
@@ -107,7 +105,6 @@ if __name__ == '__main__':
         global_.todo = len(args.id)
 
         for arg in args.id:
-            print(arg)
             extractor.extract_information(sys.argv[1]+".html")
 
     if not global_.config['dummy']:

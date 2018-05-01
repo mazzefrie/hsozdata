@@ -20,10 +20,6 @@ from ClassifierBasedGermanTagger.ClassifierBasedGermanTagger import ClassifierBa
 columns = ['CID','Person']
 cols_conferences = ['CID','Title','StartDate','EndDate',"Epoche","Thema","Count"]
 
-class NoHTML(Exception):
-    pass
-
-
 class ConnectorMongoDB(AbstractConnector.AbstractConnector):
 
     def __init__(self):
@@ -221,10 +217,7 @@ class MetaPersonExtractor(AbstractExtractor.AbstractExtractor):
 
         return cnt
 
-    def extract_information(self, file_):
-
-        try:
-            with open(self.globals_.config['indir'] + "/" + file_, "r") as ofile:
+    def extract_file(self, file_, ofile):
 
                 text = ofile.read()
                 soup = BeautifulSoup(text, "html.parser")
@@ -270,18 +263,3 @@ class MetaPersonExtractor(AbstractExtractor.AbstractExtractor):
                         "Thema":        meta_info['Thema'],
                         "Count":        tagged_persons
                     })
-
-
-                ofile.close()
-
-        except NoHTML as error:
-            print("No HTML:"+file_,file=sys.stderr)
-            raise
-
-        except FileNotFoundError as error:
-            print('File not found-Error:'+file_,file=sys.stderr)
-            raise
-
-        except IOError as error:
-            print('File-Error:'+file_,file=sys.stderr)
-            raise
