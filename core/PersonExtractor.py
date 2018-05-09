@@ -4,6 +4,7 @@ import time
 import pandas as pd
 import AbstractExtractor
 import AbstractConnector
+from AbstractExtractor import NoHTML
 import re
 import unidecode
 import nltk
@@ -16,30 +17,13 @@ from multiprocessing import Queue
 from threading import Thread
 from ClassifierBasedGermanTagger.ClassifierBasedGermanTagger import ClassifierBasedGermanTagger
 
-
-columns = ['CID','Person']
-cols_conferences = ['CID','Title','StartDate','EndDate',"Epoche","Thema","Count"]
-
-class ConnectorMongoDB(AbstractConnector.AbstractConnector):
-
-    def __init__(self):
-        print("Save to MongoDB")
-
-    def addParticipant(p):
-        pass
-
-    def addConference(c):
-        pass
-
-    def saveData():
-        print("MongoDB")
-        pass
-
-
 class ConnectorCSV(AbstractConnector.AbstractConnector):
 
     dict_participants = []
     dict_conferences = []
+
+    cols_participants = ['CID','Person']
+    cols_conferences = ['CID','Title','StartDate','EndDate',"Epoche","Thema","Count"]
 
     def __init__(self):
         print("Save to CSV")
@@ -53,8 +37,8 @@ class ConnectorCSV(AbstractConnector.AbstractConnector):
 
 
     def saveData(self):
-        pd.DataFrame(self.dict_conferences, columns=cols_conferences).to_csv("../out/conferences" + str(time.time()) + ".csv")
-        pd.DataFrame(self.dict_participants, columns=columns).to_csv("../out/participants" + str(time.time()) + ".csv")
+        pd.DataFrame(self.dict_conferences, columns=self.cols_conferences).to_csv("../out/conferences" + str(time.time()) + ".csv")
+        pd.DataFrame(self.dict_participants, columns=self.cols_participants).to_csv("../out/participants" + str(time.time()) + ".csv")
 
         print(self.dict_participants)
         print(len(self.dict_participants))
@@ -128,7 +112,7 @@ def detect_language(text):
 
 #----------------------------------------------------------------------
 
-class MetaPersonExtractor(AbstractExtractor.AbstractExtractor):
+class PersonExtractor(AbstractExtractor.AbstractExtractor):
 
     def __init__(self, destination,globals_):
         self.destination = destination
@@ -141,53 +125,6 @@ class MetaPersonExtractor(AbstractExtractor.AbstractExtractor):
         else:
             print("Dummy Mode")
 
-    def extract_metainfo(self, soup):
-
-        meta_info = {}
-
-        date = soup.find(class_="hfn-item-key", text="Datum").nextSibling.get_text()
-        date = date.replace('\n', "").replace('\t', "").replace(' ', "").split("-")
-
-        meta_info = self.extract_metablock(soup)
-
-        try:
-            meta_info['StartDate'] = date[0]
-        except IndexError:
-            meta_info['StartDate'] = ""
-
-        try:
-            meta_info['EndDate'] = date[1]
-        except IndexError:
-            meta_info['EndDate'] = ""
-
-        return meta_info
-
-
-    def extract_metablock(self, soup):
-
-        meta_data = soup.find_all(class_="metaBlock")
-        meta_string = {}
-
-        for data in meta_data:
-            d = self.extract_metablock_information(data)
-            meta_string[d[0]] = d[1]
-
-        return meta_string
-
-    def extract_metablock_information(self, data):
-
-            block_name = data.find(class_="metaBlockKey").string
-            block_content = ""
-
-            if data.find("div", class_=""):
-                signi = data.find("div", class_="")
-                if signi.string:
-                    block_content = signi.string.strip()
-                else:
-                    for tag in signi.find_all("a"):
-                        block_content +=  tag.string.strip()+", "
-
-            return [block_name, block_content.rstrip().rstrip(",")]
 
     def extract_participants(self, tagged,tid):
 
@@ -197,18 +134,22 @@ class MetaPersonExtractor(AbstractExtractor.AbstractExtractor):
         for index, obj in enumerate(tagged):
             try:
 
+                # TODO: Compare with regular expressions
                 if (obj[1] == "NE" or obj[1] == "NNP") and obj[0].isupper():
                     name.append(obj[0])
                 else:
                     if len(name) > 1:
 
+                        name_ = ' '.join(name)
+                        if not "U. S." in name_ and not "D. C." in name_ and not "M. A" in name_:
+                        #if not "U." and not "S." in name:
                         # Add Participant
-                        self.destination.addParticipant(p={
-                            "CID": tid,
-                            "Person": ' '.join(name)
-                        })
+                            self.destination.addParticipant(p={
+                                "CID": tid,
+                                "Person": name_
+                            })
 
-                        cnt += 1
+                            cnt += 1
 
                     name = []
 
@@ -217,6 +158,8 @@ class MetaPersonExtractor(AbstractExtractor.AbstractExtractor):
 
         return cnt
 
+
+    # Do something with the content of a file
     def extract_file(self, file_, ofile):
 
                 text = ofile.read()
@@ -230,8 +173,6 @@ class MetaPersonExtractor(AbstractExtractor.AbstractExtractor):
                 if not self.globals_.config['dummy']:
                     conf_title, page_title = soup.title.string.split("|")
                     tid = file_.split(".")[0]
-
-                    meta_info = self.extract_metainfo(soup)
 
                     report_text = full_text.get_text()
                     report_text = report_text.replace("/", " / ")
@@ -256,10 +197,5 @@ class MetaPersonExtractor(AbstractExtractor.AbstractExtractor):
 
                     self.destination.addConference(c={
                         "CID":          tid,
-                        "Title":        conf_title.strip(),
-                        "StartDate":    meta_info['StartDate'],
-                        "EndDate":      meta_info['EndDate'],
-                        "Epoche":       meta_info['Epoche'],
-                        "Thema":        meta_info['Thema'],
                         "Count":        tagged_persons
                     })

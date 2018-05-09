@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
+import sys
 
-class NoHTML(Exception):
+class NoHTML(BaseException):
     pass
-
 
 class AbstractExtractor:
 

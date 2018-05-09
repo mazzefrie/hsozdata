@@ -4,16 +4,16 @@ import pandas as pd
 import urllib3
 import time
 import re
-import requests
 import os
 import argparse, sys
-import pickle
+import logging
+
 from multiprocessing import Queue
 from threading import Thread
 
 class global_:
 
-    tagger = False
+    tagger = None
 
     config = {
 
@@ -29,6 +29,7 @@ class global_:
         'outdir': '../out'
     }
 
+    parser = None
     args = False
     todo = False
     done = False
@@ -52,30 +53,40 @@ class global_:
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Extract information from HSK-HTML-File.')
-    parser.add_argument("-d", '--dummy',default=global_.config['dummy'], action="store_true", help='auto output')
-    parser.add_argument("-v",'--verbose',help='verbose output',action="store_true")
-    parser.add_argument('--connector', help='verbose output', default="CSV")
-    parser.add_argument('--extractor', help='verbose output', default="MetaPerson")
-    parser.add_argument('--threads',type=int,default=global_.config['num_threads'],help='number of threads output')
-    parser.add_argument('id', metavar='N', nargs="*", type=int ,help='ID of conference file')
-    args,extra = parser.parse_known_args()
+    global_.parser = argparse.ArgumentParser(description='Extract information from HSK-HTML-File.')
+    global_.parser.add_argument("-d", '--dummy',default=global_.config['dummy'], action="store_true", help='auto output')
+    global_.parser.add_argument("-v",'--verbose',help='verbose output',action="store_true")
+    global_.parser.add_argument('--connector', help='verbose output', default="CSV")
+    global_.parser.add_argument('--extractor', help='verbose output', default="MetaPerson")
+    global_.parser.add_argument('--threads',type=int,default=global_.config['num_threads'],help='number of threads output')
+    global_.parser.add_argument('id', metavar='N', nargs="*", type=int ,help='ID of conference file')
+    args,extra = global_.parser.parse_known_args()
 
     global_.args = args
     global_.config["dummy"] = args.dummy
     global_.config['verbose'] = args.verbose
 
+    logging.basicConfig(datefmt='%I:%M:%S', format='[%(asctime)s] %(levelname)s in %(name)s: %(message)s',level=logging.INFO)
+
     # TODO: Extractor/Connector to add arguments
-    # parser.add_argument('--test',type=int,help='number of threads output')
-    # args,extra = parser.parse_known_args()
 
     # Get Extractor and his Connector
     module = __import__(args.extractor+"Extractor")
     extractor_class = getattr(module, args.extractor+"Extractor")
-    connector_class = getattr(module, "Connector"+args.connector)
+    
+    #module_connector =  __import__(args.connector+"Connector")
+    #connector_class = getattr(module, args.connector+"Connector")
 
-    connector = connector_class()
-    extractor =  extractor_class( connector, global_ )
+    try:
+        connector_class = getattr(module, "Connector"+args.connector)
+
+        # Connector muss ich von Extractor-Klasse lösen
+        # Beim Connector geht es um das speicher
+        connector = connector_class()
+        extractor =  extractor_class( connector, global_ )
+    except AttributeError as e:
+        print("Connector missing.")
+        sys.exit()
 
     # Check for "Auto"-Argument
     if not args.id:
@@ -84,13 +95,15 @@ if __name__ == '__main__':
         files = Queue(maxsize=0)
         global_.config['num_threads'] = args.threads
 
+        # TODO: Gegenstück "Reader" zum Connector einfügen: eine andere Datenquelle
+        # 
         for filename in os.listdir( global_.config['indir'] ):
             files.put(filename)
 
         global_.todo += len(os.listdir( global_.config['indir']) )
 
-        print("Auto Mode")
-        print(str(global_.config['num_threads']) + " Threads")
+        logging.info("Auto Mode")
+        logging.info(str(global_.config['num_threads']) + " Threads")
 
         for i in range(1,global_.config['num_threads']):
             t = Thread(target=extractor.extract_information_thread, args=(files,i,))
@@ -100,12 +113,15 @@ if __name__ == '__main__':
         [t.join() for t in threads]
 
     else:
-        print("Normal Mode")
+        logging.info("Normal Mode")
 
         global_.todo = len(args.id)
 
         for arg in args.id:
             extractor.extract_information(sys.argv[1]+".html")
 
+    # Hier bräuchte ich einen Mechanismus, der die Daten der einzelnen Extractoren zusammenfügt
+    # Pandas Join auf CID?
+    # Jeder Extractor muss ein pandas-DataFrame zurückgeben
     if not global_.config['dummy']:
         connector.saveData()

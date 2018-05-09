@@ -1,2 +1,2 @@
-# hsozdata
-This project deals with analyizing conference reports from the HSK humanities portal
+# HSozData
+Das Projekt befasst sich mit der Gewinnung, Analyse und Auswertung von Daten des Portals HSozKult. 
