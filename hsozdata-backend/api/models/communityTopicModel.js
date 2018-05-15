@@ -5,15 +5,15 @@ var Schema = mongoose.Schema;
 var CommunityTopicSchema = new Schema({
   class_id: {
     type: Number,
-    required: 'Kindly enter the name of the task'
+    required: ''
   },
   CID: {
     type: String,
-    required: 'Kindly enter the name of the task'
+    required: ''
   },
   cid_model: {
     type: String,
-    required: 'Kindly enter the name of the task'  	
+    required: ''  	
   }
  
 },{ collection: 'CommunityTopics' });

@@ -6,27 +6,27 @@ var Schema = mongoose.Schema;
 var ConferencesSchema = new Schema({
   Title: {
     type: String,
-    required: 'Kindly enter the name of the task'
+    required: ''
   },
   CID: {
     type: Number,
-    required: 'Kindly enter the name of the task'
+    required: ''
   },
   Community: {
     type: Number,
-    required: 'Kindly enter the name of the task'
+    required: ''
   },
   Count: {
     type: Number,
-    required: 'Kindly enter the name of the task'
+    required: ''
   },
   Epoche: {
     type: String,
-    required: 'Kindly enter the name of the task'
+    required: ''
   },
   Thema: {
     type: String,
-    required: 'Kindly enter the name of the task'
+    required: ''
   },
   StartDate: {
     type: Date,
@@ -39,8 +39,49 @@ var ConferencesSchema = new Schema({
 
 },{ collection: 'Conferences' });
 
+
+ConferencesSchema.static('findByCommunity', function (name, callback) {
+
+  return this.aggregate([
+                {   
+                "$match": 
+                  { 
+                    "Community": parseInt(name),
+                  },
+                },
+                {
+                  $lookup:{
+                    from: "ConferenceTFIDF",
+                    localField:"CIDn",
+                    foreignField:"cid",
+                    as:"tfidf"
+                  },
+                },
+                { $unwind: "$tfidf"},
+   ],callback);
+});
+
 ConferencesSchema.static('findByCID', function (name, callback) {
-  return this.find({ CID: name }, callback);
+
+  return this.aggregate([
+                {   
+                "$match": 
+                  { 
+                    "CID": parseInt(name),
+                  },
+                },
+                {
+                  $lookup:{
+                    from: "ConferenceTFIDF",
+                    localField:"CIDn",
+                    foreignField:"cid",
+                    as:"tfidf"
+                  },
+                },
+                { $unwind: "$tfidf"},
+        ],callback);
+
+  //return this.find({ CID: name }, callback);
 });
 
 module.exports = mongoose.model('Conferences', ConferencesSchema);

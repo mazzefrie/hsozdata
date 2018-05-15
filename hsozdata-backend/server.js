@@ -3,6 +3,7 @@ var express = require('express'),
   mongoose = require('mongoose'),
   port = process.env.PORT || 3000,
   Conference = require('./api/models/conferenceModel'),
+  ConferenceTFIDF = require('./api/models/conferenceTFIDFModel'),
   Participants = require('./api/models/participantsModel'),
   Communities = require('./api/models/communitiesModel'),
   CommunityTopic = require('./api/models/communityTopicModel'),
@@ -15,10 +16,9 @@ mongoose.connect('mongodb://localhost/out-0205');
 var routes = require('./api/routes/backendRoutes'); //importing route
 routes(app); //register the route
 
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.listen(port);
 
-console.log('todo list RESTful API server started on: ' + port);
+console.log('RESTful API server started on: ' + port);

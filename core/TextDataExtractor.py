@@ -53,7 +53,7 @@ class TextDataExtractor(AbstractExtractor.AbstractExtractor):
             raise NoHTML()
 
         tid = file_.split(".")[0]
-        report_text = full_text.get_text()
+        report_text = full_text.get_text(separator="\n")
         report_text = report_text.replace("/", " / ")
 
         # Workaround: BS lässt keinen Whitespace am Ende von Absätzen.

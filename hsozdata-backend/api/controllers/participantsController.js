@@ -11,19 +11,20 @@ exports.listAll = function(req, res) {
   }).skip( parseInt(req.params.offset) ).limit(10);
 };
 
-exports.listOneByID = function(req, res) {
-  participants.findByID(req.params.id, function(err, task) {
+exports.listOneByPID = function(req, res) {
+  participants.findByPID(req.params.id, function(err, task) {
     if (err)
       res.send(err);
     res.json(task);
   });  
+
 };
 
 exports.listByName = function(req, res) {
-  participants.findByName(req.params.name, function(err, task) {
+  participants.findByName(req.params.name, function(err, count, result) {
     if (err)
       res.send(err);
-    res.json(task);
+    res.json(result);
   });  
 };
 

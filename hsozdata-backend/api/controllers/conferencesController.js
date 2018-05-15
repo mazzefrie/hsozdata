@@ -1,7 +1,9 @@
 'use strict'; 
 
 var mongoose = require('mongoose'),
+topicmodel = mongoose.model('ConferenceTFIDF'),
 conference = mongoose.model('Conferences');
+
 
 exports.listAll = function(req, res) {
  conference.find({}, function(err, task) {
@@ -23,4 +25,6 @@ exports.listBy = function(req, res) {
   });  
 
 };
+
+
 

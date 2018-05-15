@@ -42,7 +42,7 @@ class IndexContainer extends Component {
 	handleFormSubmit(e) {
 
 		e.preventDefault();
-		fetch('http://127.0.0.1:3000/conference/' + parseInt(this.state.conferenceid))
+		fetch(HSKAPI+'/conference/' + parseInt(this.state.conferenceid))
       		.then(response => response.json())
       		.then(data => {
       			var conf = {};
@@ -52,7 +52,7 @@ class IndexContainer extends Component {
 	}
 
 	componentWillMount() {
-    	fetch('http://127.0.0.1:3000/conferences/')
+    	fetch(HSKAPI+'/conferences/')
       		.then(response => response.json())
       		.then(data => {
       			this.setState({ conferenceList: data }) 
@@ -63,7 +63,7 @@ class IndexContainer extends Component {
 		
 		 var properties = Object.keys(this.state.conferenceList).map((k, idx) => {
                return (
-                 		<ListGroupItem><a href={"/conference/"+this.state.conferenceList[k].CID}>{this.state.conferenceList[k].Title}</a></ListGroupItem>
+                 	<ListGroupItem><a href={"/conference/"+this.state.conferenceList[k].CID}>{this.state.conferenceList[k].Title}</a></ListGroupItem>
                );
         });
 

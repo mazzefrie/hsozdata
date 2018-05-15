@@ -174,7 +174,7 @@ class PersonExtractor(AbstractExtractor.AbstractExtractor):
                     conf_title, page_title = soup.title.string.split("|")
                     tid = file_.split(".")[0]
 
-                    report_text = full_text.get_text()
+                    report_text = full_text.get_text(separator="\n")
                     report_text = report_text.replace("/", " / ")
 
                     # Workaround: BS lässt keinen Whitespace am Ende von Absätzen.

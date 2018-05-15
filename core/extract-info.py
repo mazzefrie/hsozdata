@@ -25,7 +25,7 @@ class global_:
             "user": "root",
             "pass": "secret"
         },
-        'indir': '../data',
+        'indir': '../../data',
         'outdir': '../out'
     }
 
@@ -68,14 +68,10 @@ if __name__ == '__main__':
 
     logging.basicConfig(datefmt='%I:%M:%S', format='[%(asctime)s] %(levelname)s in %(name)s: %(message)s',level=logging.INFO)
 
-    # TODO: Extractor/Connector to add arguments
 
     # Get Extractor and his Connector
     module = __import__(args.extractor+"Extractor")
     extractor_class = getattr(module, args.extractor+"Extractor")
-    
-    #module_connector =  __import__(args.connector+"Connector")
-    #connector_class = getattr(module, args.connector+"Connector")
 
     try:
         connector_class = getattr(module, "Connector"+args.connector)
@@ -87,6 +83,9 @@ if __name__ == '__main__':
     except AttributeError as e:
         print("Connector missing.")
         sys.exit()
+
+
+    # Ziehe eine Liste der Dateien aus einer anderen Quelle, z.B. eine CSV.
 
     # Check for "Auto"-Argument
     if not args.id:
@@ -118,7 +117,7 @@ if __name__ == '__main__':
         global_.todo = len(args.id)
 
         for arg in args.id:
-            extractor.extract_information(sys.argv[1]+".html")
+            extractor.extract_information(str(arg)+".html")
 
     # Hier bräuchte ich einen Mechanismus, der die Daten der einzelnen Extractoren zusammenfügt
     # Pandas Join auf CID?

@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack -d --watch",
-    "build": "webpack -p"
+    "dev": "webpack -d --watch --env.dev",
+    "build": "webpack -p --env.build"
   },
   "author": "",
   "license": "MIT",
@@ -21,11 +21,21 @@
   },
   "dependencies": {
     "babel-runtime": "^6.26.0",
+    "d3-array": "latest",
+    "d3-axis": "latest",
+    "d3-brush": "latest",
+    "d3-cloud": "^1.2.5",
+    "d3-geo": "latest",
+    "d3-selection": "latest",
+    "d3-shape": "latest",
+    "d3-svg-legend": "latest",
+    "d3-transition": "latest",
     "react": "^15.6.1",
     "react-bootstrap": "^0.32.1",
     "react-dom": "^15.6.1",
     "react-foundation": "^0.9.5",
     "react-router-dom": "^4.2.2",
+    "react-spinners": "^0.3.2",
     "whatwg-fetch": "^2.0.4"
   }
 }

@@ -44,6 +44,12 @@ class TopicModelExtractor(AbstractExtractor.AbstractExtractor):
         # create English stop words list
         self.stop = get_stop_words('de')
 
+        with open("data/german_stopwords_full.txt") as f:
+             stopwords = f.readlines()
+
+        self.stop = [x.strip() for x in stopwords] 
+
+
         # Create p_stemmer of class PorterStemmer
         self.p_stemmer = PorterStemmer()
 
@@ -74,6 +80,8 @@ class TopicModelExtractor(AbstractExtractor.AbstractExtractor):
         corpus = [dictionary.doc2bow(text) for text in texts]
         ldamodel = gensim.models.ldamodel.LdaModel(corpus, num_topics=2, id2word = dictionary, passes=50)
 
+        print(ldamode)
+
         return ldamodel.print_topics(num_topics=2, num_words=10)
 
 
@@ -87,7 +95,7 @@ class TopicModelExtractor(AbstractExtractor.AbstractExtractor):
             raise NoHTML()
 
         tid = file_.split(".")[0]
-        report_text = full_text.get_text()
+        report_text = full_text.get_text(separator="\n")
         report_text = report_text.replace("/", " / ")
 
         # Workaround: BS lässt keinen Whitespace am Ende von Absätzen.
